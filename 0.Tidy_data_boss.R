@@ -5,6 +5,7 @@
 # Task:    Cleaning boss habitat data and adding spatial covariates
 # author:  Kingsley Griffin
 # date:    Aug 2021
+# modified: Anita Giraldo 13/08/2021 # just added lines for directories and to save xy
 ##
 
 # library(reshape2)
@@ -12,6 +13,17 @@ library(dplyr)
 # library(googlesheets4)
 library(raster)
 library(sp)
+
+# Clear memory ----
+rm(list=ls())
+
+### Set directories ----
+w.dir<- dirname(rstudioapi::getActiveDocumentContext()$path)
+d.dir <- paste(w.dir, "data", sep ='/')
+dt.dir <- paste(w.dir, "data/tidy", sep ='/')
+dr.dir <- paste(w.dir, "data/raw", sep ='/')
+
+setwd(w.dir)
 
 # get metadata from survey tracker googlesheet
 # bossd <- as.data.frame(read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-XJKP0BmY2UXPNquTxnO5-iHnG9Kw3UuJbALCcrs/edit#gid=814068592",
@@ -47,6 +59,9 @@ head(allhab)
 alldwn <- merge(bosmet, downdat,by.x = "Sample", by.y = "Site")
 alldwn$pa <- c(1)
 head(alldwn)
+
+# save
+#write.csv(alldwn, paste(dr.dir, "BOSS_downwards.xy.csv", sep ='/')) 
 
 # convert to wide percent cover data
 allhabw <- dcast(allhab, Sample + Latitude + Longitude + Depth ~ Broad, 
