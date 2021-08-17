@@ -144,7 +144,7 @@ str(hab_pred)
 names(hab_pred)
 
 ## remove unwanted columns ----
-boss_dom <- hab_pred[,c(2, 11:20)]
+boss_dom <- hab_pred[,c(2, 11:23)]
 names(boss_dom)
 
 
