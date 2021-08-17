@@ -9,23 +9,37 @@ library(cowplot)
 library(sp)
 library(rgdal)
 library(raster)
+library(dplyr)
 
 # Clear memory ----
 rm(list=ls())
 
 ### Set directories ----
-w.dir<- dirname(rstudioapi::getActiveDocumentContext()$path)
+w.dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
 dt.dir <- paste(w.dir, "data/tidy", sep ='/')
 dr.dir <- paste(w.dir, "data/raw", sep ='/')
+s.dir <- paste(w.dir, "spatial_data", sep ='/')
 
 
 #### DOMINANT DATA ----
 
 ### Load data ----
 
+# Coord data --
+xy <- read.csv(paste(dr.dir, "BOSS_downwards.xy.csv", sep='/')) %>% 
+  mutate_at(vars(Sample, Filename), list(as.factor)) %>%
+  distinct(Filename, .keep_all = T) %>% # one set of coords per sample
+  dplyr::select(c(Filename, Latitude, Longitude)) %>%
+  rename(longitude = Longitude, latitude = Latitude) %>%
+  glimpse()
+
 # Habitat data --
-df <- read.csv(paste(d.dir, "raw", "dominant-stereo-BRUVs_broad.percent.cover.csv", sep='/'))
-str(df) # 7 categories
+df <- read.csv(paste(dr.dir, "dominant-BOSS-downwards_broad.percent.cover.csv", sep='/')) %>% 
+  mutate_at(vars(Filename, row_max), list(as.factor)) %>%
+  left_join(xy, by = 'Filename') %>%
+  glimpse()
+
+str(df) # 4 categories
 
 
 # Bathy 250m all Geo Bay --
@@ -46,28 +60,38 @@ plot(bgb)
 #writeRaster(b2, paste(s.dir, "GBmultib_lidar_CMR.tif", sep='/'))
 
 # Bathy Lidar and Multibeam in latlong --
-b <- raster(paste(s.dir, "GBmultib_lidar_CMR.tif", sep='/'))
+#b <- raster(paste(s.dir, "GBmultib_lidar_CMR.tif", sep='/'))
+#butm <- raster(paste(s.dir, "bathy-for-Boss.tif", sep='/'))
+b <- raster(paste(s.dir, "bathy-for-Boss.tif", sep='/'))
 plot(b)
 b
+
+b <- projectRaster(b, crs = proj4string(bgb))
+plot(b)
 
 # Check data points --
 dfs <- df
 coordinates(dfs)  <- ~longitude+latitude
-points(dfs)
+points(dfs, pch = 20, cex = 0.7)
+
+
 
 # Filter data to use just where there is lidar and multib --
-
 dnew <- raster::extract(b, dfs, sp=T)
-str(dnew)
 
-dfnew <- as.data.frame(dnew)
-dfnew <- na.omit(dfnew)
-str(dfnew)
+h <- dnew # to keep consisten with the script
 
-dfsnew <- dfnew
-coordinates(dfsnew) <- ~longitude+latitude
-points(dfsnew, pch = 20, col="red")
-h <- dfsnew
+# str(dnew)
+# 
+# 
+# dfnew <- as.data.frame(dnew)
+# dfnew <- na.omit(dfnew)
+# str(dfnew)
+# 
+# dfsnew <- dfnew
+# coordinates(dfsnew) <- ~longitude+latitude
+# points(dfsnew, pch = 20, col="red")
+# h <- dfsnew
 
 # save points --
 #write.csv(dfnew, paste(d.dir, "GB_Bruvs_fine_bathy_habitat_presence_absence_broad.csv"))
@@ -106,8 +130,8 @@ names(predictors)
 namesp <- names(predictors)
 
 # save
-#writeRaster(predictors, paste(s.dir,"predictors.tif", sep='/'), overwrite=T)
-#write.csv(namesp, paste(s.dir, "namespredictors.csv", sep='/'))
+#writeRaster(predictors, paste(s.dir,"predictors_boss.tif", sep='/'), overwrite=T)
+#write.csv(namesp, paste(s.dir, "namespredictors_boss.csv", sep='/'))
 
 ###  Extract predictor values for each observation ----
 hp <- raster::extract(predictors, h, sp=T)
@@ -120,17 +144,17 @@ str(hab_pred)
 names(hab_pred)
 
 ## remove unwanted columns ----
-Bruv_dom <- hab_pred[,c(2:4,13, 15:23)]
-names(Bruv_dom)
+boss_dom <- hab_pred[,c(2, 11:20)]
+names(boss_dom)
 
 
-sp1 <- Bruv_dom
+sp1 <- boss_dom
 coordinates(sp1) <- ~longitude+latitude
 plot(b)
 plot(sp1, border="white", col="lightgrey", add=TRUE)
-plot(sp1, col=rainbow(7), pch=20, fill=sp1$Max_if_2_habitats_have_same, add=TRUE)
+plot(sp1, col=rainbow(7), pch=20, fill=sp1$row_max, add=TRUE)
 
 # save
-writeOGR(sp1, dsn= s.dir, layer= "GB_Bruvs_fine_bathy_habitat_dominant_broad", driver="ESRI Shapefile", overwrite_layer=TRUE)
-write.csv(Bruv_dom, paste(d.dir, "tidy", "GB_Bruvs_fine_bathy_habitat_dominant_broad.csv", sep='/'))
+#writeOGR(sp1, dsn= s.dir, layer= "GB_BOSS_fine_bathy_habitat_dominant_broad", driver="ESRI Shapefile", overwrite_layer=TRUE)
+#write.csv(boss_dom, paste(dt.dir, "GB_BOSS_fine_bathy_habitat_dominant_broad.csv", sep='/'))
 
