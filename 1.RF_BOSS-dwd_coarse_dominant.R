@@ -46,7 +46,10 @@ o.dir <- paste(w.dir, "outputs", sep='/')
 
 ### Load data ----
 
-df <- read.csv(paste(d.dir, "tidy", "GB_BOSS_fine_bathy_habitat_dominant_broad.csv", sep='/'))
+df <- read.csv(paste(d.dir, "tidy", "GB_BOSS-dwd_coarse_dominant_broad.csv", sep='/')) %>%
+  dplyr::select(-c(cells, depth.1)) %>%
+  glimpse()
+
 head(df)
 str(df) # check the factors and the predictors
 any(is.na(df)) # check for NA's in the data
@@ -72,7 +75,7 @@ plot(gb, add=T)
 
 # remove unneeded columns ---
 names(df)
-df2 <- df[,c(3,7:15)]
+df2 <- df[,c(3,6:14)]
 head(df2)
 # change name of class
 names(df2)
@@ -202,7 +205,7 @@ sample <- sample.split(df2$flowdir, SplitRatio = 0.75)
 train <- subset(df2, sample == TRUE)
 test  <-subset(df2, sample == FALSE)
 dim(train) # [1] 146  10
-dim(test) # [1]  49 10
+dim(test) # [1]  48 10
 
 summary(df2)
 
@@ -365,6 +368,6 @@ print(lp2)
 dev.off()
 
 # save prediction ---
-writeRaster(testx, paste(o.dir, "GBpred-coarese-BOSS-dwd.tif", sep='/'))
+writeRaster(testx, paste(o.dir, "GBpred-coarese-BOSS-dwd.tif", sep='/'), overwrite = TRUE)
 
 

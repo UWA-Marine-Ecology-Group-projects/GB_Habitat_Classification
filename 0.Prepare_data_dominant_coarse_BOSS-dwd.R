@@ -150,8 +150,8 @@ plot(sp1, border="white", col="lightgrey", add=TRUE)
 plot(sp1, col=rainbow(7), pch=20, fill=sp1$row_max, add=TRUE)
 
 # save
-writeOGR(sp1, dsn= s.dir, layer= "GB_BOSS-dwd_coarse_dominant_broad", driver="ESRI Shapefile", overwrite_layer=TRUE)
-write.csv(BOSS_dom, paste(d.dir, "tidy", "GB_BOSS-dwd_coarse_dominant_broad.csv", sep='/'))
+#writeOGR(sp1, dsn= s.dir, layer= "GB_BOSS-dwd_coarse_dominant_broad", driver="ESRI Shapefile", overwrite_layer=TRUE)
+#write.csv(BOSS_dom, paste(d.dir, "tidy", "GB_BOSS-dwd_coarse_dominant_broad.csv", sep='/'))
 
 
 ###
@@ -219,6 +219,6 @@ coordinates(rdfsp) <- ~longitude+latitude
 
 ##
 # save
-writeOGR(rdfsp, dsn= s.dir, layer= "GB_BOSS_coarse_filtered_dominant_broad", driver="ESRI Shapefile", overwrite_layer=TRUE)
-write.csv(rdf2, paste(d.dir, "tidy", "GB_BOSS_coarse_filtered_dominant_broad.csv", sep='/'))
+#writeOGR(rdfsp, dsn= s.dir, layer= "GB_BOSS-dwd_coarse_dominant_broad", driver="ESRI Shapefile", overwrite_layer=TRUE)
+#write.csv(rdf2, paste(d.dir, "tidy", "GB_BOSS-dwd_coarse_dominant_broad.csv", sep='/'))
 
